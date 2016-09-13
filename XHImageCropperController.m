@@ -46,6 +46,7 @@
         self.cropFrame = cropFrame;
         self.ratioLimit = limitRatio;
         self.imgOriginal = [self fixOrientation:image];
+        self.fd_prefersNavigationBarHidden = YES;
     }
     return self;
 }
@@ -77,10 +78,28 @@
     if (self.imgOriginal.size.width < self.imgOriginal.size.height) {
         oriWidth = self.cropFrame.size.width;
         oriHeight = self.imgOriginal.size.height * (oriWidth / self.imgOriginal.size.width);
+        if (oriHeight < self.cropFrame.size.height) {
+            oriHeight = self.cropFrame.size.height;
+            oriWidth = self.imgOriginal.size.width * (oriHeight / self.imgOriginal.size.height);
+        }
     }
-    else {
+    else if (self.imgOriginal.size.width > self.imgOriginal.size.height) {
         oriHeight = self.cropFrame.size.height;
         oriWidth = self.imgOriginal.size.width * (oriHeight / self.imgOriginal.size.height);
+        if (oriWidth < self.cropFrame.size.width) {
+            oriWidth = self.cropFrame.size.width;
+            oriHeight = self.imgOriginal.size.height * (oriWidth / self.imgOriginal.size.width);
+        }
+    }
+    else {
+        if (self.cropFrame.size.width < self.cropFrame.size.height) {
+            oriHeight = self.cropFrame.size.height;
+            oriWidth = self.imgOriginal.size.width * (oriHeight / self.imgOriginal.size.height);
+        }
+        else {
+            oriWidth = self.cropFrame.size.width;
+            oriHeight = self.imgOriginal.size.height * (oriWidth / self.imgOriginal.size.width);
+        }
     }
     CGFloat oriX = self.cropFrame.origin.x + (self.cropFrame.size.width - oriWidth) / 2;
     CGFloat oriY = self.cropFrame.origin.y + (self.cropFrame.size.height - oriHeight) / 2;
@@ -129,7 +148,6 @@
     [confirmBtn setTitle:@"完成" forState:UIControlStateNormal];
     [confirmBtn.titleLabel setFont:[UIFont systemFontOfSize:17.0f]];
     [confirmBtn.titleLabel setTextAlignment:NSTextAlignmentCenter];
-    confirmBtn.titleLabel.textColor = [UIColor whiteColor];
     [confirmBtn.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
     [confirmBtn.titleLabel setNumberOfLines:0];
     [confirmBtn setTitleEdgeInsets:UIEdgeInsetsMake(5.0f, 5.0f, 5.0f, 5.0f)];
@@ -238,16 +256,22 @@
     if (newFrame.size.width > self.frameLarge.size.width) {
         newFrame = self.frameLarge;
     }
-    newFrame.origin.x = oriCenter.x - newFrame.size.width/2;
-    newFrame.origin.y = oriCenter.y - newFrame.size.height/2;
+    newFrame.origin.x = oriCenter.x - newFrame.size.width / 2;
+    newFrame.origin.y = oriCenter.y - newFrame.size.height / 2;
     return newFrame;
 }
 
 - (CGRect)handleBorderOverflow:(CGRect)newFrame
 {
-    if (newFrame.origin.x > self.cropFrame.origin.x) newFrame.origin.x = self.cropFrame.origin.x;
-    if (CGRectGetMaxX(newFrame) < self.cropFrame.size.width) newFrame.origin.x = self.cropFrame.size.width - newFrame.size.width;
-    if (newFrame.origin.y > self.cropFrame.origin.y) newFrame.origin.y = self.cropFrame.origin.y;
+    if (newFrame.origin.x > self.cropFrame.origin.x) {
+        newFrame.origin.x = self.cropFrame.origin.x;
+    }
+    if (CGRectGetMaxX(newFrame) < self.cropFrame.size.width) {
+        newFrame.origin.x = self.cropFrame.size.width - newFrame.size.width;
+    }
+    if (newFrame.origin.y > self.cropFrame.origin.y) {
+        newFrame.origin.y = self.cropFrame.origin.y;
+    }
     if (CGRectGetMaxY(newFrame) < self.cropFrame.origin.y + self.cropFrame.size.height) {
         newFrame.origin.y = self.cropFrame.origin.y + self.cropFrame.size.height - newFrame.size.height;
     }
